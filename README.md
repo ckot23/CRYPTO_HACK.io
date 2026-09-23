@@ -2,8 +2,8 @@
 
 В репозитории лежит **готовый проект игры для Godot 4** в одном архиве:
 
-📦 **[CRYPTO_HACK_godot.zip](CRYPTO_HACK_godot.zip)** — 689 КБ, 54 файла, всё внутри
-(скрипты, сцены, шрифты, данные миссий, инструкция и документация).
+📦 **[CRYPTO_HACK_godot.zip](CRYPTO_HACK_godot.zip)** — **версия 1.0.1**, 700 КБ, 56 файлов,
+всё внутри (скрипты, сцены, шрифты, данные миссий, инструкция и документация).
 
 Ниже — как его распаковать и запустить в Godot. Занимает 5 минут, ничего собирать и
 устанавливать (кроме самого Godot) не нужно.
@@ -92,6 +92,7 @@ Godot 5–15 секунд импортирует шрифты и данные. �
 | Управление, режимы PYTHON/СИМУЛЯТОР, FAQ, экспорт в `.exe` | `README.md` внутри архива |
 | Как переносилась веб-версия, подводные камни GDScript, как добавить миссию | `docs/PORTING_GUIDE.md` внутри архива |
 | Полный список файлов проекта и что копировать в свой проект | `docs/FILES.md` внутри архива |
+| Проверка проекта после своих правок (без запуска Godot) | `python3 tools/check_project.py` внутри архива |
 
 **Сохранения** лежат не в архиве, а в системной папке Godot:
 
@@ -106,13 +107,46 @@ Godot 5–15 секунд импортирует шрифты и данные. �
 
 | Симптом | Причина и решение |
 | --- | --- |
-| В консоли `Parse Error` | Версия Godot старше 4.3 — поставь свежую (4.4 / 4.5). |
+| В консоли `Parse Error` | Если это `Function "X" has the same name as a previously declared signal` — у тебя архив версии 1.0.0, скачай 1.0.1 (см. ниже). Иначе: версия Godot старше 4.3 — поставь свежую (4.4 / 4.5). |
 | `Failed to load resource` / `Cannot open file` | Файлы лежат не рядом с `project.godot` или структура папок изменена — распакуй архив заново как есть. |
 | Ошибок нет, но экран чёрный | Идёт импорт шрифтов, подожди пару секунд. Если долго — **Project → Reload Current Project**. |
 | Godot предлагает «Convert project to a newer version» | Соглашайся, это обновление формата проекта. |
 | `Import` не видит `project.godot` | В диалоге выбора включи показ всех файлов, либо перетащи `project.godot` прямо в окно менеджера проектов. |
 
 ---
+
+## Обновление архива и история версий
+
+Файлы внутри архива не связаны с прогрессом игры: **сохранения лежат в системной папке
+Godot** (`%APPDATA%\Godot\app_userdata\CRYPTO_HACK\` на Windows, `~/.local/share/godot/...`
+на Linux) и привязаны к имени проекта, а не к папке. Поэтому обновлять игру можно без
+потери прогресса.
+
+**Уже скачал версию 1.0.0 и получил ошибку парсера?** Два пути:
+
+* **Скачать архив 1.0.1 заново** (ссылки выше) и заменить папку `CRYPTO_HACK_godot` целиком —
+  прогресс сохранится.
+* Или **поправить вручную** — правок всего несколько, все в файлах внутри проекта:
+
+  | Файл | Что сделать |
+  | --- | --- |
+  | `scripts/autoload/game.gd` | строку `func mission_completed(id: int) -> bool:` → `func is_mission_completed(id: int) -> bool:` (сигнал `signal mission_completed(...)` не трогать!) |
+  | `scripts/autoload/game.gd` | строку `func lesson_completed(id: int) -> bool:` → `func is_lesson_completed(id: int) -> bool:` |
+  | `scripts/ui/hack_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (4 места) |
+  | `scripts/ui/miner_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (1 место) |
+  | `scripts/ui/files_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (1 место) |
+  | `scripts/ui/learn_window.gd` | `Game.lesson_completed(` → `Game.is_lesson_completed(` (2 места) |
+
+  Причина ошибки: в Godot сигнал и функция в одном классе не могут иметь одинаковое имя
+  («Function "mission_completed" has the same name as a previously declared signal»).
+
+**История версий**
+
+* **1.0.1** — исправлена ошибка парсера из-за одноимённых сигнала и функции (`game.gd`);
+  предикаты переименованы в `is_mission_completed()` / `is_lesson_completed()`.
+  Добавлен `tools/check_project.py` — проверка проекта до запуска Godot (одинаковые имена,
+  перекрытие членов `Control`/`Node`, сигнатуры `_draw`/`_process`, битые пути `res://…`).
+* **1.0.0** — первый перенос веб-версии на Godot 4.
 
 ## Вернуть исходники
 
