@@ -53,7 +53,9 @@ godot/
 ├── assets/
 │   ├── data/gamedata.json миссии, уроки, монеты, апгрейды, цитаты
 │   └── fonts/             JetBrains Mono + Unbounded + DejaVu Sans Mono (fallback)
-└── docs/PORTING_GUIDE.md  полный гайд по переносу
+└── docs/
+    ├── PORTING_GUIDE.md   полный гайд по переносу из веб-версии
+    └── FILES.md           манифест: что копировать в свой проект и что прописать в настройках
 ```
 
 ## Сохранения
@@ -104,3 +106,6 @@ Python 3 и добавь его в `PATH`, затем перезапусти и�
 
 Больше подводных камней — в [docs/PORTING_GUIDE.md](docs/PORTING_GUIDE.md),
 раздел «Подводные камни».
+
+* `docs/FILES.md` — **манифест переноса**: полный список файлов, что копировать в свой
+  проект, какие настройки прописать в `project.godot`, а что Godot создаёт сам.
