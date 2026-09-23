@@ -220,7 +220,8 @@ class Checker:
                 body = node.child_by_field_name("body")
                 if body is None:
                     continue
-                for member in body.children:
+                # walk, а не children: поля могут лежать внутри #if/#endif-блоков
+                for member in walk(body):
                     if member.type in ("field_declaration", "event_field_declaration"):
                         for child in member.children:
                             if child.type != "variable_declaration":
@@ -268,6 +269,8 @@ class Checker:
 
         if node.type == "identifier":
             name = text(src, node)
+            if name == "_":
+                return  # одиночное подчёркивание — это дискард C# 7+, а не поле
             if name.startswith("_"):
                 parent = node.parent
                 is_target = False

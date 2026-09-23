@@ -9,7 +9,8 @@ namespace CryptoHack.EditorTools
     /// <summary>
     /// Меню редактора: игра запускается и без сцены (Bootstrap сам создаёт объекты),
     /// но для сборки билда сцена нужна. Этот пункт создаёт Assets/Scenes/Game.unity
-    /// и добавляет её в Build Settings.
+    /// и добавляет её в список сцен сборки (Build Settings в 2022.3,
+    /// Build Profiles в Unity 6.6).
     /// </summary>
     public static class CryptoHackMenu
     {
@@ -35,7 +36,7 @@ namespace CryptoHack.EditorTools
             }
 
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
-            Debug.Log("Сцена добавлена в Build Settings. Теперь File → Build работает.");
+            Debug.Log("Сцена добавлена в список сборки. В Unity 6.6 дальше: File → Build Profiles → Build.");
         }
 
         [MenuItem("CRYPTO_HACK/Открыть гайд по установке (INSTALL.md)")]

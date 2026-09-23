@@ -66,6 +66,12 @@ namespace CryptoHack
             Game.Init();
             Game.ToastRequested += OnToast;
 
+            // если в проекте выбрана схема ввода без нужного пакета — говорим об этом сразу
+            if (!string.IsNullOrEmpty(UiInput.ErrorMessage))
+            {
+                Game.Notify("Ввод недоступен", UiInput.ErrorMessage, "warn");
+            }
+
             ShowMainMenu();
         }
 

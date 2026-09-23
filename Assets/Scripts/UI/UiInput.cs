@@ -50,13 +50,32 @@ namespace CryptoHack
         public static float Scroll;        // колесо (+вверх) в этом кадре
         public static string TypedText = "";
 
+        /// <summary>Непустая строка — ввод недоступен, текст подсказывает, что включить.</summary>
+        public static string ErrorMessage = "";
+
         static readonly List<char> _typedBuffer = new List<char>();
         static bool _init;
+        static bool _inputBroken;
 
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        static bool _textHooked;
+
         static void OnTextInput(char c)
         {
             if (c >= ' ') _typedBuffer.Add(c);
+        }
+
+        /// <summary>
+        /// Подписываемся на текст лениво: в Unity 6 устройства ввода создаются
+        /// не мгновенно, и на старте Keyboard.current может быть ещё null.
+        /// </summary>
+        static void HookTextInput()
+        {
+            if (_textHooked) return;
+            Keyboard kb = Keyboard.current;
+            if (kb == null) return;
+            kb.onTextInput += OnTextInput;
+            _textHooked = true;
         }
 #endif
 
@@ -65,7 +84,39 @@ namespace CryptoHack
             if (_init) return;
             _init = true;
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            if (Keyboard.current != null) Keyboard.current.onTextInput += OnTextInput;
+            HookTextInput();
+#endif
+            Probe();
+        }
+
+        /// <summary>
+        /// Разовая проверка ввода при старте. Если в Player Settings выбран
+        /// «Input System Package (New)», а пакет не установлен (или наоборот),
+        /// обращение к UnityEngine.Input бросает исключение — ловим это сразу
+        /// и показываем понятную подсказку вместо спама ошибок каждый кадр.
+        /// </summary>
+        static void Probe()
+        {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            if (Mouse.current == null && Keyboard.current == null)
+            {
+                ErrorMessage = "Input System не видит мышь и клавиатуру — проверь, что пакет Input System установлен.";
+                Debug.LogWarning("CRYPTO_HACK: " + ErrorMessage);
+            }
+#else
+            try
+            {
+                // само обращение к Input и есть проверка
+                _ = Input.mousePosition;
+                _ = Input.GetMouseButton(0);
+            }
+            catch (System.Exception e)
+            {
+                _inputBroken = true;
+                ErrorMessage = "Ввод отключён: Edit → Project Settings → Player → Other Settings → Active Input Handling "
+                    + "поставь «Input Manager (Old)» или «Both», иначе клики не работают.";
+                Debug.LogError("CRYPTO_HACK: " + ErrorMessage + " (" + e.GetType().Name + ")");
+            }
 #endif
         }
 
@@ -73,6 +124,7 @@ namespace CryptoHack
         public static void Update()
         {
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            HookTextInput();
             MousePosition = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
             MouseDown = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
             MouseUp = Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
@@ -88,6 +140,15 @@ namespace CryptoHack
                 TypedText = "";
             }
 #else
+            if (_inputBroken)
+            {
+                MouseDown = false;
+                MouseUp = false;
+                MouseHeld = false;
+                Scroll = 0f;
+                TypedText = "";
+                return;
+            }
             MousePosition = Input.mousePosition;
             MouseDown = Input.GetMouseButtonDown(0);
             MouseUp = Input.GetMouseButtonUp(0);
@@ -104,6 +165,7 @@ namespace CryptoHack
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
                 return Keyboard.current != null && Keyboard.current.ctrlKey.isPressed;
 #else
+                if (_inputBroken) return false;
                 return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)
                     || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
 #endif
@@ -141,6 +203,7 @@ namespace CryptoHack
             }
             return false;
 #else
+            if (_inputBroken) return false;
             switch (key)
             {
                 case UiKey.Backspace: return Input.GetKeyDown(KeyCode.Backspace);
@@ -180,7 +243,7 @@ namespace CryptoHack
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
                 return Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
 #else
-                return Input.anyKeyDown;
+                return !_inputBroken && Input.anyKeyDown;
 #endif
             }
         }
