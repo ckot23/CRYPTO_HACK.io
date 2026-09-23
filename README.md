@@ -2,7 +2,7 @@
 
 В репозитории лежит **готовый проект игры для Godot 4** в одном архиве:
 
-📦 **[CRYPTO_HACK_godot.zip](CRYPTO_HACK_godot.zip)** — **версия 1.0.1**, 700 КБ, 56 файлов,
+📦 **[CRYPTO_HACK_godot.zip](CRYPTO_HACK_godot.zip)** — **версия 1.0.2**, 700 КБ, 56 файлов,
 всё внутри (скрипты, сцены, шрифты, данные миссий, инструкция и документация).
 
 Ниже — как его распаковать и запустить в Godot. Занимает 5 минут, ничего собирать и
@@ -132,6 +132,8 @@ Godot** (`%APPDATA%\Godot\app_userdata\CRYPTO_HACK\` на Windows, `~/.local/sha
   | --- | --- |
   | `scripts/autoload/game.gd` | строку `func mission_completed(id: int) -> bool:` → `func is_mission_completed(id: int) -> bool:` (сигнал `signal mission_completed(...)` не трогать!) |
   | `scripts/autoload/game.gd` | строку `func lesson_completed(id: int) -> bool:` → `func is_lesson_completed(id: int) -> bool:` |
+  | `scripts/autoload/game.gd` | `var bonus := 1.0 + STEALTH_XP[…]` → `var bonus: float = 1.0 + STEALTH_XP[…]` (строка 110) |
+  | `scripts/autoload/game.gd` | `var bonus := 1.0 + HACK_REWARD_BONUS[…]` → `var bonus: float = 1.0 + HACK_REWARD_BONUS[…]` (строка 147) |
   | `scripts/ui/hack_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (4 места) |
   | `scripts/ui/miner_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (1 место) |
   | `scripts/ui/files_window.gd` | `Game.mission_completed(` → `Game.is_mission_completed(` (1 место) |
@@ -142,6 +144,9 @@ Godot** (`%APPDATA%\Godot\app_userdata\CRYPTO_HACK\` на Windows, `~/.local/sha
 
 **История версий**
 
+* **1.0.2** — вторая ошибка вывода типов (`var bonus := 1.0 + STEALTH_XP[…]`): элемент
+  нетипизированного массива — Variant, тип указан явно. Чекер обновлён и теперь ловит
+  такие строки сам.
 * **1.0.1** — исправлена ошибка парсера из-за одноимённых сигнала и функции (`game.gd`);
   предикаты переименованы в `is_mission_completed()` / `is_lesson_completed()`.
   Добавлен `tools/check_project.py` — проверка проекта до запуска Godot (одинаковые имена,
