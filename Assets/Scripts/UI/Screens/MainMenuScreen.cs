@@ -50,7 +50,7 @@ namespace CryptoHack
             Text status = Ui.Label(top, "● NEON NET ONLINE", 11, Theme.Green, TextAnchor.MiddleLeft, true, false);
             Ui.TopLeft(status.rectTransform, 18f, 0f, 300f, 60f);
 
-            Text hint = Ui.Label(top, "v1.0.4 · UNITY 6.6 · UGUI C#", 11, Theme.TextMuted, TextAnchor.MiddleRight, false, false);
+            Text hint = Ui.Label(top, "v1.0.5 · UNITY 6.6 · UGUI C#", 11, Theme.TextMuted, TextAnchor.MiddleRight, false, false);
             Ui.TopRight(hint.rectTransform, -18f, 0f, 320f, 60f);
 
             // ---------------- центр ----------------
